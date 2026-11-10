@@ -1,0 +1,138 @@
+"""
+PROGRAM APOTIK
+Materi: operator pembanding (==, !=, <, >, <=, >=) dan kondisional (if/elif/else)
+Alur: pilih obat (10 jenis) -> input jumlah -> hitung total -> diskon -> bayar -> struk
+"""
+
+# Data 10 jenis obat: kode -> (nama, harga satuan, stok)
+OBAT = {
+    1: ("Paracetamol 500mg (strip)", 5000, 100),
+    2: ("Amoxicillin 500mg (strip)", 12000, 50),
+    3: ("Ibuprofen 400mg (strip)", 8000, 60),
+    4: ("Antasida DOEN (strip)", 6000, 80),
+    5: ("Cetirizine 10mg (strip)", 7000, 40),
+    6: ("OBH Combi Sirup (botol)", 18000, 30),
+    7: ("Vitamin C 500mg (botol)", 25000, 45),
+    8: ("Oralit (sachet)", 2500, 120),
+    9: ("Betadine Antiseptik (botol)", 15000, 25),
+    10: ("Salep Hidrokortison (tube)", 20000, 20),
+}
+
+
+def tampilkan_daftar():
+    print("\n" + "=" * 52)
+    print("            DAFTAR OBAT APOTIK")
+    print("=" * 52)
+    print(f"{'Kode':<5}{'Nama Obat':<30}{'Harga':>8}{'Stok':>8}")
+    print("-" * 52)
+    for kode, (nama, harga, stok) in OBAT.items():
+        print(f"{kode:<5}{nama:<30}{harga:>8}{stok:>8}")
+    print("-" * 52)
+
+
+def hitung_diskon(total):
+    """Diskon berdasarkan total belanja (pakai operator pembanding)."""
+    if total >= 150000:
+        return 0.10  # 10%
+    elif total >= 75000:
+        return 0.05  # 5%
+    else:
+        return 0.0
+
+
+def cetak_struk(nama_pelanggan, keranjang, subtotal, persen_diskon, diskon,
+                total, bayar, kembalian):
+    print("\n" + "=" * 52)
+    print("               STRUK APOTIK SEHAT")
+    print("=" * 52)
+    print(f"Pelanggan : {nama_pelanggan}")
+    print("-" * 52)
+    print(f"{'Obat':<26}{'Qty':>4}{'Harga':>9}{'Jumlah':>9}")
+    print("-" * 52)
+    for nama, qty, harga, jumlah in keranjang:
+        print(f"{nama[:25]:<26}{qty:>4}{harga:>9}{jumlah:>9}")
+    print("-" * 52)
+    print(f"{'Subtotal':<39}{subtotal:>13}")
+    print(f"{'Diskon (' + str(int(persen_diskon * 100)) + '%)':<39}{diskon:>13.0f}")
+    print(f"{'TOTAL BAYAR':<39}{total:>13.0f}")
+    print(f"{'Uang Bayar':<39}{bayar:>13.0f}")
+    print(f"{'Kembalian':<39}{kembalian:>13.0f}")
+    print("=" * 52)
+    print("      Terima kasih, semoga lekas sembuh!")
+    print("=" * 52)
+
+
+def main():
+    nama_pelanggan = input("Nama pelanggan : ").strip()
+    if nama_pelanggan == "":
+        nama_pelanggan = "Umum"
+
+    keranjang = []
+    subtotal = 0
+
+    while True:
+        tampilkan_daftar()
+        try:
+            kode = int(input("Masukkan kode obat (1-10): "))
+        except ValueError:
+            print(">> Input harus angka!")
+            continue
+
+        # Operator pembanding: cek kode valid
+        if kode < 1 or kode > 10:
+            print(">> Kode obat tidak ada!")
+            continue
+
+        nama, harga, stok = OBAT[kode]
+
+        try:
+            qty = int(input(f"Jumlah {nama}: "))
+        except ValueError:
+            print(">> Jumlah harus angka!")
+            continue
+
+        if qty <= 0:
+            print(">> Jumlah harus lebih dari 0!")
+            continue
+        elif qty > stok:
+            print(f">> Stok tidak cukup! Stok tersedia: {stok}")
+            continue
+        else:
+            jumlah = harga * qty
+            keranjang.append((nama, qty, harga, jumlah))
+            subtotal += jumlah
+            # kurangi stok
+            OBAT[kode] = (nama, harga, stok - qty)
+            print(f">> {nama} x{qty} ditambahkan.")
+
+        lagi = input("Beli obat lain? (y/t): ").lower()
+        if lagi != "y":
+            break
+
+    # Jika keranjang kosong
+    if len(keranjang) == 0:
+        print("Tidak ada obat dibeli. Program selesai.")
+        return
+
+    persen_diskon = hitung_diskon(subtotal)
+    diskon = subtotal * persen_diskon
+    total = subtotal - diskon
+
+    print(f"\nTotal yang harus dibayar: Rp {total:,.0f}")
+    while True:
+        try:
+            bayar = float(input("Uang bayar: Rp "))
+        except ValueError:
+            print(">> Input harus angka!")
+            continue
+        if bayar >= total:
+            break
+        print(f">> Uang kurang Rp {total - bayar:,.0f}. Ulangi.")
+
+    kembalian = bayar - total
+    cetak_struk(nama_pelanggan, keranjang, subtotal, persen_diskon, diskon,
+                total, bayar, kembalian)
+
+
+if __name__ == "__main__":
+    main()
